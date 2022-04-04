@@ -11,19 +11,25 @@ namespace ConsoleApp
         string path = @"F:\college\third_year\second semester\compilers\project\disk.txt";
 
         int[] fat_table;
-        FatTable() {
+       public FatTable() {
             fat_table = new int[1024];
 
         }
         public void initializeFat() {
             for (int i = 0; i < 1024; i++) {
-                fat_table[i] = 0;
+                if (i < 5)
+                {
+                    fat_table[i] = -1;
+                }
+                else {     
+             fat_table[i] = 0;
+            }
             }
 
         }
 
         public void writeFat() {
-            using (FileStream file = File.Create(path))
+            using (FileStream file = File.OpenWrite(path))
             {
 
                 file.Seek(1024, SeekOrigin.Begin);
@@ -35,7 +41,7 @@ namespace ConsoleApp
         }
         public int[] getFat_table() {
             int[] bytesAsInts = new int[1024];
-            using (FileStream file = File.Create(path))
+            using (FileStream file = File.OpenRead(path))
             {
 
                 
@@ -43,7 +49,7 @@ namespace ConsoleApp
 
                 byte[] newFat = new byte[1024 * 4];
                 file.Read(newFat, 0, 1024 * 4);
-                 bytesAsInts = newFat.Select(x => (int)x).ToArray();
+                Buffer.BlockCopy(newFat, 0, bytesAsInts, 0, bytesAsInts.Length);
             }
 
             return bytesAsInts;
@@ -51,15 +57,16 @@ namespace ConsoleApp
         public void displayFat_table()
         {
             int[] bytesAsInts = new int[1024];
-            using (FileStream file = File.Create(path))
+            using (FileStream file = File.OpenRead(path))
             {
 
 
                 file.Seek(1024, SeekOrigin.Begin);
 
                 byte[] newFat = new byte[1024 * 4];
+              
                 file.Read(newFat, 0, 1024 * 4);
-                bytesAsInts = newFat.Select(x => (int)x).ToArray();
+                Buffer.BlockCopy(newFat, 0, bytesAsInts, 0, bytesAsInts.Length);
                 for (int i =0;i< 1024;i++) {
                     Console.WriteLine(i + "| "+bytesAsInts[i]);
                 }

@@ -10,13 +10,25 @@ namespace ConsoleApp
 
         static void Main(string[] args)
         {
-            
-            
             string path = Directory.GetCurrentDirectory();
-            String command="";
+
+
+            /* 
+            FatTable f = new FatTable();
+            VirtualDisk v = new VirtualDisk();
+
+            v.initialize();
+            f.initializeFat();
+            f.writeFat();
+            f.displayFat_table();
+            
+             */
+
+
+            String command ="";
             String commandText;
             String arg ="";
-            int i = 0;
+         
             while (true)
             {
                 arg = "";
@@ -45,6 +57,7 @@ namespace ConsoleApp
                     continue;
                 else if (command == "exit")
                     Environment.Exit(0);
+
                 else if (command == "cls") { 
                     Console.Clear();
                     Console.WriteLine(arg);
