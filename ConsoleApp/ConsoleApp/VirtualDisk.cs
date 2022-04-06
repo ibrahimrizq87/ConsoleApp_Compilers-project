@@ -48,7 +48,34 @@ class VirtualDisk
 
 
 
+    
+        }
+        public void writeBlock(byte[] arr, int ind)
+        {
+            using (FileStream file = File.Create(path))
+            {
+
+
+                file.Seek(ind*1024, SeekOrigin.Begin);
+                file.Write(arr, 0, arr.Length);
+            }
+        }
+        public byte[] getBlock(int index)
+        {
+
+            byte[] block = new byte[1024 * 4];
+            using (FileStream file = File.OpenRead(path))
+            {
+
+
+                file.Seek(index*1024, SeekOrigin.Begin);
+
+                file.Read(block, 0, 1024 * 4);
+            }
+
+            return block;
         }
     }
+    
 
 }

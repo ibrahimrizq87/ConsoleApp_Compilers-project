@@ -92,8 +92,19 @@ namespace ConsoleApp
             return -1;
         }
 
+        public int getavilableBlocks() {
+            int count = 0;
+            for (int i = 0; i > 1024; i++) {
+                if (fat_table[i] == 0) {
+                    count = count + 1;
 
+                }
+            }
+            return count;
+        }
+    
     }
+
 
     }
 
