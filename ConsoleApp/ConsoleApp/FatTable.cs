@@ -10,7 +10,7 @@ namespace ConsoleApp
     {
         string path = @"F:\college\third_year\second semester\compilers\project\disk.txt";
 
-        int[] fat_table;
+       public int[] fat_table;
        public FatTable() {
             fat_table = new int[1024];
 

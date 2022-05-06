@@ -4,26 +4,64 @@ using System.Text;
 
 namespace ConsoleApp
 {
-    class directory :DirectoryEntery
+    class directory : DirectoryEntery
     {
-public directory(char[] fileN, int firstC, byte att, directory parent) :base(fileN, firstC, att) {
-            if (parent!=null) {
+        public directory(char[] fileN, byte att, int firstC, directory parent) : base(fileN, att, firstC) {
+            if (parent != null) {
                 this.parent = parent;
             }
         }
-        
-        List<DirectoryEntery> Directory_table;
+
+        public List<DirectoryEntery> Directory_table;
         directory parent;
         FatTable fat = new FatTable();
         VirtualDisk virtualDisk = new VirtualDisk();
-        public void searchDir(String name) { 
-        
+        public int  searchDir(String name) {
+            readDirectory();
+           
+            for (int i = 0; i < Directory_table.Count;i++) {
+                String str = new String(Directory_table[i].fileName);
+                if (String.Equals( str, name)) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        public void UpdateContent(DirectoryEntery dirEntery) {
+            int index = searchDir(new String(dirEntery.fileName));
+            readDirectory();
+            if (index != -1) {
+                Directory_table.RemoveAt(index);
+                Directory_table.Insert(index, dirEntery);
+            } 
+        }
+        public void deleteDirectory() {
+            if (firstCluster != 0) {
+                int index = firstCluster;
+                int next =fat.getNext(index);
+                do {
+                    fat.setNext(index,0);
+                    index = next;
+                    if (index != -1) { next = fat.getNext(index); }
+
+                } while (index != -1 );
+                if (parent != null) {
+                    parent.readDirectory();
+                    int row=parent.searchDir(new String(fileName));
+                    if (row !=0) {
+                        parent.Directory_table.RemoveAt(row);
+                        parent.writeDirectory();
+                        fat.writeFat();
+                    }
+                }
+            }
         }
         public void readDirectory() {
-            List <DirectoryEntery> DirEnterys = new List<DirectoryEntery>();
+            //List <DirectoryEntery> Directory_talble2 = new List<DirectoryEntery>();
             List <byte> ls=new List<byte>();
             int fatIndex=0;
             int next;
+           Directory_table.Clear();
             do
             {
                 if (firstCluster != 0)
@@ -48,8 +86,8 @@ public directory(char[] fileN, int firstC, byte att, directory parent) :base(fil
                 for (int j=0;j<32;j++) {
                     by[j] = ls[j + (i * 32)];
                 }
-
-                DirEnterys.Add(getDiroctryEntry(by));
+                //Directory_talble2.Add(getDiroctryEntry(by));
+                   Directory_table.Add(getDiroctryEntry(by));
             }
         }
        
@@ -68,6 +106,7 @@ public directory(char[] fileN, int firstC, byte att, directory parent) :base(fil
             }
             // we use this part to find the avaliable blockes and write the data
 
+            // int numberOfRequiredBlocks =Math.Ceiling(Convert.ToDecimal(DirTablebytes.Length / 1024));
             int numberOfRequiredBlocks;
             if (DirTablebytes.Length % 1024 == 0)
             {
