@@ -161,6 +161,93 @@ which is what you would have to type if extensions were disabled.
        public String help() {
             return File.ReadAllText(@"F:\college\third_year\second semester\compilers\project\help.txt");
         }
+        public String exit()
+        {
+            return (@"Quits the CMD.EXE program (command interpreter) or the current batch
+script.
+
+EXIT [/B] [exitCode]
+
+  /B          specifies to exit the current batch script instead of
+              CMD.EXE.  If executed from outside a batch script, it
+              will quit CMD.EXE
+
+  exitCode    specifies a numeric number.  if /B is specified, sets
+              ERRORLEVEL that number.  If quitting CMD.EXE, sets the process
+              exit code with that number.
+");
+        }
+        public String copy()
+        {
+            return @"Copies one or more files to another location.
+
+COPY [/D] [/V] [/N] [/Y | /-Y] [/Z] [/L] [/A | /B ] source [/A | /B]
+     [+ source [/A | /B] [+ ...]] [destination [/A | /B]]
+
+  source       Specifies the file or files to be copied.
+  /A           Indicates an ASCII text file.
+  /B           Indicates a binary file.
+  /D           Allow the destination file to be created decrypted
+  destination  Specifies the directory and/or filename for the new file(s).
+  /V           Verifies that new files are written correctly.
+  /N           Uses short filename, if available, when copying a file with a
+               non-8dot3 name.
+  /Y           Suppresses prompting to confirm you want to overwrite an
+               existing destination file.
+  /-Y          Causes prompting to confirm you want to overwrite an
+               existing destination file.
+  /Z           Copies networked files in restartable mode.
+  /L           If the source is a symbolic link, copy the link to the target
+               instead of the actual file the source link points to.
+
+The switch /Y may be preset in the COPYCMD environment variable.
+This may be overridden with /-Y on the command line.  Default is
+to prompt on overwrites unless COPY command is being executed from
+within a batch script.
+
+To append files, specify a single file for destination, but multiple files
+for source (using wildcards or file1+file2+file3 format).
+";
+        }
+        public String del()
+        {
+            return @"Deletes one or more files.
+
+DEL [/P] [/F] [/S] [/Q] [/A[[:]attributes]] names
+ERASE [/P] [/F] [/S] [/Q] [/A[[:]attributes]] names
+
+  names         Specifies a list of one or more files or directories.
+                Wildcards may be used to delete multiple files. If a
+                directory is specified, all files within the directory
+                will be deleted.
+
+  /P            Prompts for confirmation before deleting each file.
+  /F            Force deleting of read-only files.
+  /S            Delete specified files from all subdirectories.
+  /Q            Quiet mode, do not ask if ok to delete on global wildcard
+  /A            Selects files to delete based on attributes
+  attributes    R  Read-only files            S  System files
+                H  Hidden files               A  Files ready for archiving
+                I  Not content indexed Files  L  Reparse Points
+                O  Offline files              -  Prefix meaning not
+
+If Command Extensions are enabled DEL and ERASE change as follows:
+
+The display semantics of the /S switch are reversed in that it shows
+you only the files that are deleted, not the ones it could not find.
+";
+        }
+        public String rename()
+        {
+            return @"Renames a file or files.
+
+RENAME [drive:][path]filename1 filename2.
+REN [drive:][path]filename1 filename2.
+
+Note that you cannot specify a new drive or path for your destination file.
+";
+        }
+          
     }
 
 }

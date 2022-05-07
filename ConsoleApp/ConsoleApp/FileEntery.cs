@@ -7,42 +7,49 @@ namespace ConsoleApp
     class FileEntery : DirectoryEntery 
     {
         directory parent;
-        String content;
+        public String content;
         DirectoryEntery Directory_table ;
       
         FatTable fat = new FatTable();
         VirtualDisk virtualDisk = new VirtualDisk();
 
-        public FileEntery(char[] fileN, byte att, int firstC, directory parent, String content,int filSize) : base(fileN, att, firstC, filSize) {
+        public FileEntery(char[] fileN, byte att, int firstC, directory parent, int filSize) : base(fileN, att, firstC, filSize) {
             this.parent = parent;
-            this.content = content;
+            
         }
 
-        public void deleteDirectory()
+        public void deleteFile()
         {
+            int index, next;
             if (firstCluster != 0)
             {
-                int index = firstCluster;
-                int next = fat.getNext(index);
+                index = firstCluster;
+                next = fat.getNext(index);
+
+
                 do
                 {
                     fat.setNext(index, 0);
                     index = next;
-                    if (index != -1) { next = fat.getNext(index); }
-
-                } while (index != -1);
-                if (parent != null)
-                {
-                    parent.readDirectory();
-                    int row = parent.searchDir(new String(fileName));
-                    if (row != 0)
+                    if (index != -1)
                     {
-                        parent.Directory_table.RemoveAt(row);
-                        parent.writeDirectory();
-                        fat.writeFat();
+                        next = fat.getNext(index);
                     }
-                }
+                } while (index != -1);
             }
+            if (parent != null)
+            {
+                parent.readDirectory();
+                index = parent.searchDir(fileName.ToString());
+                if (index != -1)
+                {
+                    parent.Directory_table.RemoveAt(index);
+                    parent.writeDirectory();
+                }
+                fat.writeFat();
+            }
+
+
         }
 
         //-----------------------------------------------------------------------------------------------------

@@ -17,7 +17,7 @@ namespace ConsoleApp
 
             char[] fname = { 'H' };
             directory currentDir = new directory(fname, 0x10, 5, null,0);
-
+            FatTable fat = new FatTable();
             currentDir.readDirectory();
 
             /*
@@ -109,7 +109,7 @@ namespace ConsoleApp
                 else if (command == "exit" && !hasName && !hasAttr)
                     Environment.Exit(0);
 
-                else if (command == "md" && hasName)
+                else if (command == "md" && hasName && !hasAttr)
                 {
                     char[] na = name.ToCharArray();
 
@@ -119,7 +119,7 @@ namespace ConsoleApp
                     currentDir.writeDirectory();
 
                 }
-                else if (command == "help" && !hasName)
+                else if (command == "help" && !hasName && !hasAttr)
                 {
                     Console.WriteLine(help.help());
                 }
@@ -177,7 +177,7 @@ namespace ConsoleApp
                     }
 
                 }
-                else if (command == "rd" && hasName)
+                else if (command == "rd" && hasName && !hasAttr)
                 {
                     if (currentDir.searchDir(name) != -1)
                     {
@@ -207,7 +207,7 @@ namespace ConsoleApp
 
 
                 }
-                else if (command == "rename" && hasName && hasName2)
+                else if (command == "rename" && hasName && hasName2 && !hasAttr)
                 {
                     if (currentDir.searchDir(name) != -1)
                     {
@@ -220,7 +220,7 @@ namespace ConsoleApp
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "copy" && hasName && hasName2)
+                else if (command == "copy" && hasName && hasName2 && !hasAttr)
                 {
                     if (currentDir.searchDir(name) != -1 && currentDir.searchDir(name2) != -1)
                     {
@@ -236,7 +236,7 @@ namespace ConsoleApp
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "del" && hasName)
+                else if (command == "del" && hasName && !hasAttr)
                 {
 
                     if (currentDir.searchDir(name) != -1)
@@ -251,7 +251,7 @@ namespace ConsoleApp
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "types" && hasName)
+                else if (command == "types" && hasName && !hasAttr)
                 {
 
                     if (currentDir.searchDir(name) != -1)
@@ -266,20 +266,42 @@ namespace ConsoleApp
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "import")
+                else if (command == "dir" && !hasName && !hasAttr)
                 {
-                    //-------------------------
-                }
-                else if (command == "export")
-                {
-                    //-------------------------
+                    int fileN = 0;
+                    int dN = 0;
+                    int size = 0;
+                    Console.WriteLine("Directorys in"+path+":");
+
+                    for (int i = 0;i<currentDir.Directory_table.Count;i++) {
+                    
+                        if (currentDir.Directory_table[i].fileAttr == 0x0)
+                        {
+                            Console.WriteLine("      " + currentDir.Directory_table[i].fileSize + " "+ currentDir.Directory_table[i].fileName);
+                            fileN++;
+                            size += currentDir.Directory_table[i].fileSize;
+                        }
+                        else {
+                            Console.WriteLine("      <DIR>" + currentDir.Directory_table[i].fileName);
+
+
+                            dN++;
+                        }
+
+
+                        Console.WriteLine(fileN+ " File(s)              "+size+ "bytes");
+                        Console.WriteLine(dN + " Dir(s)              " + fat.getFreeSpace() + "free bytes");
+                       
+             
+
+                    }
                 }
                 else if (command == "cls" && !hasName && !hasAttr)
                 {
                     Console.Clear();
                     Console.WriteLine(attr);
                 }
-                else if (command == "help" && !hasName)
+                else if (command == "help" && !hasName && !hasAttr)
                 { Console.WriteLine(File.ReadAllText(@"F:\college\third_year\second semester\compilers\project\help.txt")); }
 
                 else { Console.Write("'" + commandText + "'" + "is not recognized as an internal or external command,\n operable program or batch file\n"); }

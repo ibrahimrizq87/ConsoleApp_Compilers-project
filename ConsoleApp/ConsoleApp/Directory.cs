@@ -32,9 +32,9 @@ namespace ConsoleApp
             }
             return -1;
         }
-        public void UpdateContent(DirectoryEntery dirEntery)
+        public void UpdateContent(String name, DirectoryEntery dirEntery)
         {
-            int index = searchDir(new String(dirEntery.fileName));
+            int index = searchDir(new String(name));
             readDirectory();
             if (index != -1)
             {
@@ -42,31 +42,39 @@ namespace ConsoleApp
                 Directory_table.Insert(index, dirEntery);
             }
         }
-        public void deleteDirectory()
+        public void deleteDirectory(directory d)
         {
-            if (firstCluster != 0)
+            int index, next;
+            if (d.firstCluster != 0)
             {
-                int index = firstCluster;
-                int next = fat.getNext(index);
+                index = d.firstCluster;
+                next = fat.getNext(index);
+
+
                 do
                 {
                     fat.setNext(index, 0);
                     index = next;
-                    if (index != -1) { next = fat.getNext(index); }
-
-                } while (index != -1);
-                if (parent != null)
-                {
-                    parent.readDirectory();
-                    int row = parent.searchDir(new String(fileName));
-                    if (row != 0)
+                    if (index != -1)
                     {
-                        parent.Directory_table.RemoveAt(row);
-                        parent.writeDirectory();
-                        fat.writeFat();
+                        next = fat.getNext(index);
                     }
-                }
+                } while (index != -1);
             }
+            if (d.parent != null)
+            {
+                parent.readDirectory();
+                index = parent.searchDir(d.fileName.ToString());
+                if (index != -1)
+                {
+                    parent.Directory_table.RemoveAt(index);
+                    parent.writeDirectory();
+                }
+                fat.writeFat();
+            }
+
+
+
         }
         public void readDirectory()
         {

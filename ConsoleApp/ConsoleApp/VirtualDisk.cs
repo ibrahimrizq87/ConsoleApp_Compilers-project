@@ -18,7 +18,7 @@ namespace ConsoleApp
         {
             FatTable fatT = new FatTable();
 
-            if (File.Exists(path))
+            if (!File.Exists(path))
             {
                 char[] fat = new char[1024 * 4];
                 for (int i = 0; i < 1024 * 4; i++)
