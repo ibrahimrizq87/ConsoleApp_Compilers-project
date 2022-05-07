@@ -11,14 +11,16 @@ namespace ConsoleApp
         public int[] fileEmpty = new int[3];       // size is 12 byte  
         public int fileSize;
         public int firstCluster;
-        
-        public DirectoryEntery(char[] fileN, byte att, int firstC)
+
+        public DirectoryEntery(char[] fileN, byte att, int firstC,int filSize)
         {
+            this.fileSize = filSize;
             this.fileAttr = att;
             this.fileName = fileN;
             this.firstCluster = firstC;
         }
-        public byte[] getBytes (){                // this methode returns the directory Entery as an array of Bytes
+        public byte[] getBytes()
+        {                // this methode returns the directory Entery as an array of Bytes
             byte[] bytes = new byte[32];
             Buffer.BlockCopy(Encoding.ASCII.GetBytes(fileName), 0, bytes, 0, 10);
             bytes[11] = fileAttr;
@@ -30,18 +32,19 @@ namespace ConsoleApp
             return bytes;
         }
 
-        public DirectoryEntery getDiroctryEntry(byte[] arr) {
-         char[] fileName = new char[11];
+        public DirectoryEntery getDiroctryEntry(byte[] arr)
+        {
+            char[] fileName = new char[11];
             Buffer.BlockCopy(arr, 0, fileName, 0, 10);
             int firstCluster = BitConverter.ToInt32(arr, 10);
-            byte att=arr[11];
-       
-        DirectoryEntery DirEntery = new DirectoryEntery(fileName, att, firstCluster);
+            byte att = arr[11];
+
+            DirectoryEntery DirEntery = new DirectoryEntery(fileName, att, firstCluster,0);
 
             //  this one need to be done
-            // take the value from the array and past it on the atteriputes of the class
+            // take the value from the array and pass it on the atteriputes of the class
             return DirEntery;
-        } 
+        }
 
     }
 }

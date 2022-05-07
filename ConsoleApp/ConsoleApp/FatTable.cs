@@ -19,7 +19,7 @@ namespace ConsoleApp
             for (int i = 0; i < 1024; i++) {
                 if (i < 5)
                 {
-                    fat_table[i] = -1;
+                    fat_table[i] = i+1;
                 }
                 else {     
              fat_table[i] = 0;
@@ -90,6 +90,9 @@ namespace ConsoleApp
                     return i;
             }
             return -1;
+        }
+        public int getFreeSpace() {
+            return getavilableBlocks()*1024;
         }
 
         public int getavilableBlocks() {

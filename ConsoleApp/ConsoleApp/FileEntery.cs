@@ -13,7 +13,7 @@ namespace ConsoleApp
         FatTable fat = new FatTable();
         VirtualDisk virtualDisk = new VirtualDisk();
 
-        public FileEntery(char[] fileN, byte att, int firstC, directory parent, String content) : base(fileN, att, firstC) {
+        public FileEntery(char[] fileN, byte att, int firstC, directory parent, String content,int filSize) : base(fileN, att, firstC, filSize) {
             this.parent = parent;
             this.content = content;
         }

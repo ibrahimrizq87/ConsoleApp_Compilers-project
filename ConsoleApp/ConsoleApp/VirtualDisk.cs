@@ -6,19 +6,20 @@ using System.IO;
 namespace ConsoleApp
 
 {
-                
 
-class VirtualDisk
+
+    class VirtualDisk
     {
         string path = @"F:\college\third_year\second semester\compilers\project\disk.txt";
 
-      
 
-   public void initialize()
+
+        public void initialize()
         {
             FatTable fatT = new FatTable();
-            
-            if (File.Exists(path)) {
+
+            if (File.Exists(path))
+            {
                 char[] fat = new char[1024 * 4];
                 for (int i = 0; i < 1024 * 4; i++)
                 {
@@ -39,7 +40,8 @@ class VirtualDisk
                 byte[] Fat = Encoding.UTF8.GetBytes(fat);
                 byte[] Data = Encoding.UTF8.GetBytes(data);
 
-                using (FileStream file = File.Create(path)) {
+                using (FileStream file = File.Create(path))
+                {
 
 
                     file.Write(superBlock, 0, superBlock.Length);
@@ -50,14 +52,15 @@ class VirtualDisk
                 fatT.initializeFat();
 
                 char[] name = { 'H' };
-                directory root = new directory(name, 0x10, 5, null);
+                directory root = new directory(name, 0x10, 5, null,0);
                 root.writeDirectory();
                 fatT.writeFat();
             }
-            else {
-                fatT.fat_table =fatT.getFat_table();
-                char[] name = {'H'};
-                directory root = new directory(name, 0x10, 5, null);
+            else
+            {
+                fatT.fat_table = fatT.getFat_table();
+                char[] name = { 'H' };
+                directory root = new directory(name, 0x10, 5, null,0);
                 root.readDirectory();
                 fatT.writeFat();
             }
@@ -71,7 +74,7 @@ class VirtualDisk
             {
 
 
-                file.Seek(ind*1024, SeekOrigin.Begin);
+                file.Seek(ind * 1024, SeekOrigin.Begin);
                 file.Write(arr, 0, arr.Length);
             }
         }
@@ -83,7 +86,7 @@ class VirtualDisk
             {
 
 
-                file.Seek(index*1024, SeekOrigin.Begin);
+                file.Seek(index * 1024, SeekOrigin.Begin);
 
                 file.Read(block, 0, 1024 * 4);
             }
@@ -91,6 +94,6 @@ class VirtualDisk
             return block;
         }
     }
-    
+
 
 }
