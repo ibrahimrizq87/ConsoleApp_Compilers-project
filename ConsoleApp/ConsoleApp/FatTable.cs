@@ -8,27 +8,33 @@ namespace ConsoleApp
 {
     class FatTable
     {
-        string path = @"F:\college\third_year\second semester\compilers\project\disk.txt";
+        static string path = @"F:\college\third_year\second semester\compilers\project\disk.txt";
 
-       public int[] fat_table;
+       public static int[] fat_table = new int[1024];
        public FatTable() {
-            fat_table = new int[1024];
+            
 
         }
-        public void initializeFat() {
+        public static void initializeFat() {
             for (int i = 0; i < 1024; i++) {
-                if (i < 5)
+                if (i < 4)
                 {
-                    fat_table[i] = i+1;
+                    fat_table[i] = i + 1;
+
                 }
-                else {     
-             fat_table[i] = 0;
-            }
+                else if (i == 4)
+                {
+                    fat_table[i] = -1;
+
+                }
+                else {
+                    fat_table[i] = 0;
+                }
             }
 
         }
 
-        public void writeFat() {
+        public static void writeFat() {
             using (FileStream file = File.OpenWrite(path))
             {
 
@@ -39,7 +45,7 @@ namespace ConsoleApp
 
             }
         }
-        public int[] getFat_table() {
+        public static int[] getFat_table() {
             int[] bytesAsInts = new int[1024];
             using (FileStream file = File.OpenRead(path))
             {
@@ -50,11 +56,12 @@ namespace ConsoleApp
                 byte[] newFat = new byte[1024 * 4];
                 file.Read(newFat, 0, 1024 * 4);
                 Buffer.BlockCopy(newFat, 0, bytesAsInts, 0, bytesAsInts.Length);
+            
             }
-
+            fat_table = bytesAsInts;
             return bytesAsInts;
         }
-        public void displayFat_table()
+        public static void displayFat_table()
         {
             int[] bytesAsInts = new int[1024];
             using (FileStream file = File.OpenRead(path))
@@ -75,16 +82,16 @@ namespace ConsoleApp
             
         }
 
-        public int getNext(int index) {
+        public static int getNext(int index) {
 
             return fat_table[index];
         }
-        public void setNext(int index, int value)
+        public static void setNext(int index, int value)
         {
 
              fat_table[index] = value;
         }
-        public int getAvilableBlock(){
+        public static int getAvilableBlock(){
             for (int i = 0; i < 1024; i++) {
                 if (fat_table[i] == 0)
                     return i;
@@ -95,9 +102,9 @@ namespace ConsoleApp
             return getavilableBlocks()*1024;
         }
 
-        public int getavilableBlocks() {
+        public static int getavilableBlocks() {
             int count = 0;
-            for (int i = 0; i > 1024; i++) {
+            for (int i = 0; i < 1024; i++) {
                 if (fat_table[i] == 0) {
                     count = count + 1;
 

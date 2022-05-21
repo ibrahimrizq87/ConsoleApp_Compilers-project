@@ -18,7 +18,7 @@ namespace ConsoleApp
         {
             FatTable fatT = new FatTable();
 
-            if (!File.Exists(path))
+            if (File.Exists(path))
             {
                 char[] fat = new char[1024 * 4];
                 for (int i = 0; i < 1024 * 4; i++)
@@ -49,20 +49,24 @@ namespace ConsoleApp
 
                     file.Write(Data, 0, Data.Length);
                 }
-                fatT.initializeFat();
+                FatTable.initializeFat();
 
                 char[] name = { 'H' };
                 directory root = new directory(name, 0x10, 5, null,0);
                 root.writeDirectory();
-                fatT.writeFat();
+                FatTable.writeFat();
             }
             else
             {
-                fatT.fat_table = fatT.getFat_table();
+                //FatTable.initializeFat();
+                FatTable.fat_table = FatTable.getFat_table();
+                FatTable.displayFat_table();
+
+
                 char[] name = { 'H' };
                 directory root = new directory(name, 0x10, 5, null,0);
-                root.readDirectory();
-                fatT.writeFat();
+               root.readDirectory();
+              
             }
 
 
@@ -70,7 +74,7 @@ namespace ConsoleApp
         }
         public void writeBlock(byte[] arr, int ind)
         {
-            using (FileStream file = File.Create(path))
+            using (FileStream file = File.OpenWrite(path))
             {
 
 

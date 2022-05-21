@@ -1,204 +1,142 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace ConsoleApp
 {
-    class FileEntery : DirectoryEntery 
+    class FileEntery : DirectoryEntery
     {
         directory parent;
-        public String content;
-        DirectoryEntery Directory_table ;
       
+        public String content1;
+        DirectoryEntery Directory_table;
+
         FatTable fat = new FatTable();
         VirtualDisk virtualDisk = new VirtualDisk();
 
-        public FileEntery(char[] fileN, byte att, int firstC, directory parent, int filSize) : base(fileN, att, firstC, filSize) {
+        public FileEntery(char[] fileN, byte att, int firstC, directory parent, int filSize, String content) : base(fileN, att, firstC, filSize)
+        {
+            this.content1 = content;
             this.parent = parent;
+
+        }
+
+
+        public List<byte> getBytes()
+        {                // this methode returns the directory Entery as an array of Bytes
+            byte[] bytes = new byte[32];
+            List<byte> content = new List<byte>();
+            byte[] name = new byte[11];
+            for (int i = 0; i < Encoding.ASCII.GetBytes(fileName).Length; i++)
+            {
+                bytes[i] = Encoding.ASCII.GetBytes(fileName)[i];
+            }
+            bytes[11] = fileAttr;
+            for (int i = 24; i < 28; i++)
+            {
+                bytes[i] = BitConverter.GetBytes(fileSize)[i - 24];
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    bytes[j + (j * i)] = BitConverter.GetBytes(fileEmpty[i])[j];
+                }
+            }
+            for (int i = 28; i < 32; i++)
+            {
+                bytes[i] = BitConverter.GetBytes(firstCluster)[i - 28];
+            }
+            content.AddRange(bytes);
+
+
+                content.AddRange( Encoding.ASCII.GetBytes(this.content1));
             
+
+
+            return content;
         }
 
-        public void deleteFile()
+        public FileEntery getFileEntry(List<byte> arr)
         {
-            int index, next;
-            if (firstCluster != 0)
+            byte[] fileBytes = new byte[32];
+            byte[] content = new byte[arr.Count-32];
+            for (int i = 32; i < arr.Count; i++)
             {
-                index = firstCluster;
-                next = fat.getNext(index);
+                content[i] = arr[i];
+            }
+            for (int i = 0; i < 32; i++)
+            {
+                fileBytes[i] = arr[i];
+            }
+            byte[] fileName = new byte[11];
+            for (int i = 0; i < 11; i++)
+            {
+
+                fileBytes[i] = fileName[i];
+            }
 
 
-                do
-                {
-                    fat.setNext(index, 0);
-                    index = next;
-                    if (index != -1)
-                    {
-                        next = fat.getNext(index);
-                    }
-                } while (index != -1);
-            }
-            if (parent != null)
-            {
-                parent.readDirectory();
-                index = parent.searchDir(fileName.ToString());
-                if (index != -1)
-                {
-                    parent.Directory_table.RemoveAt(index);
-                    parent.writeDirectory();
-                }
-                fat.writeFat();
-            }
+            int firstCluster = BitConverter.ToInt32(fileBytes, 10);
+            byte att = fileBytes[11];
+
+            FileEntery DirEntery = new FileEntery(Encoding.ASCII.GetChars(fileName), att, firstCluster, this.parent,
+                content.Length, new String(Encoding.ASCII.GetChars(content)));
+
+            //  this one need to be done
+            // take the value from the array and pass it on the atteriputes of the class
+            return DirEntery;
+
 
 
         }
 
-        //-----------------------------------------------------------------------------------------------------
 
 
 
-
-
-
-
-        public int searchDir(String name)
-        {
-            readDirectory();
-
-            for (int i = 0; i < parent.Directory_table.Count; i++)
-            {
-                String str = new String(parent.Directory_table[i].fileName);
-                if (String.Equals(str, name) && fileAttr == 0x0)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-        public void UpdateContent(DirectoryEntery dirEntery)
-        {
-            int index = searchDir(new String(dirEntery.fileName));
-            readDirectory();
-            if (index != -1)
-            {
-                parent.Directory_table.RemoveAt(index);
-                parent.Directory_table.Insert(index, dirEntery);
-            }
-        }
-
-        //-----------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-        public void readDirectory()
-        {
-            //List <DirectoryEntery> Directory_talble2 = new List<DirectoryEntery>();
-            List<byte> ls = new List<byte>();
-            int fatIndex = 0;
-            int next;
-           
-            do
-            {
-                if (firstCluster != 0)
-                {
-                    fatIndex = firstCluster;
-                    next = fat.getNext(fatIndex);
-                    ls.AddRange(virtualDisk.getBlock(fatIndex));
-                    fatIndex = next;
-                    if (fatIndex != -1)
-                    {
-                        next = fat.getNext(fatIndex);
-                    }
-
-
-                }
-
-
-            } while (fatIndex != -1);
-            byte[] by = new byte[32];
-
-            for (int i = 0; i <   32; i++)
-            {
-                by[i] = ls[i];
-
-            }
-            Directory_table = getDiroctryEntry(by);
-            byte[] contentbyte = new byte[(ls.Count)-32];
-
-            for (int i = 32; i < ls.Count; i++)
-            {
-                contentbyte[i] = ls[i];
-
-            }
-            content= Convert.ToBase64String(contentbyte);
-
-        }
-
-
-        /*
-                byte[] by = new byte[32];
-                for (int j = 0; j < 32; j++)
-                {
-                    by[j] = ls[j + (i * 32)];
-                }
-                //Directory_talble2.Add(getDiroctryEntry(by));
-                Directory_table.Add(getDiroctryEntry(by));
-            */
-
-
-
-        //-----------------------------------------------------------------------------------------------
-
-
-
-
-
-
-        public void writeDirectory()
+        public void writeFile()
         {  // we take the data from the list which repreasents the directory table and put them in a big array to write it in 
            //the file
 
-            byte[] FileEnterybytes = new byte[32];
-
-            FileEnterybytes = Directory_table.getBytes();
-                
-            
-            // we use
-            // this part to find the avaliable blockes and write the data
+            List<byte> fileData = getBytes();
+// we use this part to find the avaliable blockes and write the data
 
             // int numberOfRequiredBlocks =Math.Ceiling(Convert.ToDecimal(DirTablebytes.Length / 1024));
             int numberOfRequiredBlocks;
-            byte[] contentBytes =Encoding.ASCII.GetBytes(content);
-            if (contentBytes.Length % 1024 == 0)
+            if (fileData.Count % 1024 == 0)
             {
-                numberOfRequiredBlocks = contentBytes.Length / 1024;
+                numberOfRequiredBlocks = fileData.Count / 1024;
             }
             else
             {
-                numberOfRequiredBlocks = (contentBytes.Length / 1024) + 1;
+                numberOfRequiredBlocks = (fileData.Count / 1024) + 1;
             }
 
-            int numberOfFullSizeBlocks = contentBytes.Length / 1024; // here we takes the floor of the number (it is the floor by the default as it is integer) 
+            int numberOfFullSizeBlocks = fileData.Count / 1024; // here we takes the floor of the number (it is the floor by the default as it is integer) 
 
-            int reminder = contentBytes.Length % 1024;
+            int reminder = fileData.Count % 1024;
             // taking the seel of the number to define the required blocks to save the data
-
-            if (fat.getavilableBlocks() >= numberOfRequiredBlocks)
+            int aval = FatTable.getavilableBlocks();
+            if (aval >= numberOfRequiredBlocks)
             {
 
                 List<byte[]> blocks = new List<byte[]>();
                 for (int i = 0; i < numberOfFullSizeBlocks; i++)
                 {
                     blocks[i] = new byte[1024];
-                    Buffer.BlockCopy(contentBytes, i * 1024, blocks[i], 0, 1024);
+                    for (int j = 0; j < 1024; j++)
+                    {
+                        blocks[i][j] = fileData[j + (i * 1024)];
+                    }
 
                 }
-                Byte[] reminderBlock = new byte[reminder];
-                Buffer.BlockCopy(contentBytes, numberOfFullSizeBlocks * 1024, reminderBlock, 0, reminder);
+                byte[] reminderBlock = new byte[reminder];
+                for (int j = 0; j < reminder; j++)
+                {
+                    reminderBlock[j] = fileData[j + (numberOfFullSizeBlocks * 1024)];
+                }
+
 
                 int fatIndex;
                 int lastIndex = -1;
@@ -211,41 +149,124 @@ namespace ConsoleApp
                 else
                 {
 
-                    fatIndex = fat.getAvilableBlock();
+                    fatIndex = FatTable.getAvilableBlock();
                     firstCluster = fatIndex;
                 }
                 // write the directory table as a blocks on the file and manage the fat table data
-                virtualDisk.writeBlock(FileEnterybytes, fatIndex);
-                fat.setNext(fatIndex, -1);
-                lastIndex = fatIndex;
-                fatIndex = fat.getAvilableBlock();
-                fat.writeFat();
                 for (int i = 0; i < numberOfFullSizeBlocks; i++)
                 {
                     virtualDisk.writeBlock(blocks[i], fatIndex);
-                    fat.setNext(fatIndex, -1);
+                    FatTable.setNext(fatIndex, -1);
                     if (lastIndex != -1)
                     {
-                        fat.setNext(lastIndex, fatIndex);
+                        FatTable.setNext(lastIndex, fatIndex);
                     }
                     lastIndex = fatIndex;
-                    fatIndex = fat.getAvilableBlock();
-                    fat.writeFat();
+                    fatIndex = FatTable.getAvilableBlock();
+                    FatTable.writeFat();
                 }
                 if (reminderBlock.Length > 0)
                 {
-                    fatIndex = fat.getAvilableBlock();
+                    fatIndex = FatTable.getAvilableBlock();
+                    if (numberOfFullSizeBlocks == 0 && this.firstCluster == 0) { this.firstCluster = fatIndex; } 
+                    
+                    lastIndex = fatIndex - 1;
                     virtualDisk.writeBlock(reminderBlock, fatIndex);
-                    fat.setNext(fatIndex, -1);
-                    fat.setNext(lastIndex, fatIndex);
-                    fat.writeFat();
+                    FatTable.setNext(fatIndex, -1);
+                    FatTable.setNext(lastIndex, fatIndex);
+                    FatTable.writeFat();
                 }
             }
             else { Console.WriteLine("there is no enough space"); }
 
         }
+
+
+        public void importFile(String path,String name)
+        {
+             
+
+            
+            this.content1 =File.ReadAllText(Path.GetFullPath(path));
+            using (FileStream file = File.OpenRead(path.ToString()))
+            {
+
+
+                this.fileName= name.ToCharArray();
+                this.fileSize = file.Name.ToCharArray().Length ;
+
+
+            }
+        }
+        public void exportFile(String path)
+        {
+
+            using (FileStream file = File.Create(path))
+            {
+                
+            }
+            File.WriteAllText(path, content1);
+        }
+        public void readContent()
+        {
+            FatTable.fat_table = FatTable.getFat_table();
+            //List <DirectoryEntery> Directory_talble2 = new List<DirectoryEntery>();
+            List<byte> ls = new List<byte>();
+            int fatIndex = 0;
+            int next;
+            
+            this.content1 = "";
+            if (this.firstCluster != 0 && FatTable.getNext(this.firstCluster) != 0)
+            {
+                fatIndex = this.firstCluster;
+                do
+                {
+
+
+
+
+                    if (fatIndex != -1)
+                    {
+                        next = FatTable.getNext(fatIndex);
+                    }
+                    next = FatTable.getNext(fatIndex);
+                    ls.AddRange(virtualDisk.getBlock(fatIndex));
+                    fatIndex = next;
+
+
+
+
+
+
+                } while (fatIndex != -1);
+
+            }
+            else
+            {
+                Console.WriteLine("there is no folders in here");
+
+            }
+            byte[] cont = new byte[ls.Count];
+            for (int i = 0; i < ls.Count ; i++)
+            {
+                
+                  if (Convert.ToChar(ls[i]) == '#')
+                    {
+                        
+                        break;
+                    }
+                    cont[i] = ls[i];
+          
+            }
+            this.content1=new string(Encoding.ASCII.GetChars(cont));
+        }
+
+
+
+
+
+
+
     }
-
-
 }
 

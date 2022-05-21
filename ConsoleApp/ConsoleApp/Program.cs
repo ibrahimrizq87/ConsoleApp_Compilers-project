@@ -11,43 +11,23 @@ namespace ConsoleApp
         static void Main(string[] args)
         {
             Help help = new Help();
-            String path = "";
+            
             VirtualDisk v = new VirtualDisk();
             v.initialize();
 
             char[] fname = { 'H' };
             directory currentDir = new directory(fname, 0x10, 5, null,0);
+            String path = fname.ToString();
             FatTable fat = new FatTable();
             currentDir.readDirectory();
-
-            /*
-                       VirtualDisk v = new VirtualDisk();
-                       v.initialize();
-
-                       char[] name = { 'H' };
-                       directory currentDir = new directory(name, 0x10, 5, null);
-
-                       currentDir.readDirectory();
-
-
-                       FatTable f = new FatTable();
-
-
-
-                       f.initializeFat();
-                       f.writeFat();
-                       f.displayFat_table();
-
-                        */
-
-
+            
+           
+            
 
             String command = "";
             String commandText;
-            String attr = "";
             String name;
             String name2;
-            Boolean hasAttr;
             Boolean hasName;
             Boolean hasName2;
 
@@ -57,73 +37,64 @@ namespace ConsoleApp
                    name = "";
                 hasName = false;
                 hasName2 = false;
-                hasAttr = false;
-                attr = "";
+      
                 command = "";
-                path = (currentDir.fileName).ToString();
+                path = new String(currentDir.fileName);
                 Console.Write(path + ">");
                 commandText = Console.ReadLine();
+                command.ToLower();
+                string[] sep = { " " };
 
-                string[] separatingStrings = { "-" };
-                string[] words = commandText.Split(separatingStrings, System.StringSplitOptions.RemoveEmptyEntries);
-
+                string[] wo = commandText.Split(sep, System.StringSplitOptions.RemoveEmptyEntries);
                 if (commandText != "")
                 {
-                    command = words[0].ToLower().Trim();
-                    if (words.Length > 1)
-                    {
-                        attr = words[1];
-                        hasAttr = true;
-                    }
-                    command.ToLower();
-                    string[] sep = { " " };
 
-                    string[] wo = commandText.Split(sep, System.StringSplitOptions.RemoveEmptyEntries);
-                    command = wo[0];
-                    if (wo.Length > 0)
+
+                    command = wo[0].Trim();
+                    if (wo.Length > 1)
                     {
                         name = wo[1];
                         hasName = true;
                     }
-                    if (wo.Length > 1)
+                    if (wo.Length > 2)
                     {
                         name2 = wo[2];
                         hasName2 = true;
+                       
                     }
 
                 }
 
 
 
-                /* foreach (char ch in commandText) {
-                    if (ch == '-')
-                        arg += commandText[i + 1];
-                    else if (ch != ' ')
-                        command += ch;
-                    i++;
-                }*/
-
-
                 if (commandText == "")
                     continue;
-                else if (command == "exit" && !hasName && !hasAttr)
+                else if (command == "exit" && !hasName) { 
                     Environment.Exit(0);
 
-                else if (command == "md" && hasName && !hasAttr)
-                {
-                    char[] na = name.ToCharArray();
-
-
-                    directory dir = new directory(na, 0x10, 0, currentDir, 0);
-                    currentDir.Directory_table.Add(dir);
                     currentDir.writeDirectory();
-
                 }
-                else if (command == "help" && !hasName && !hasAttr)
+
+                else if (command == "md" && hasName && !hasName2)
+                {
+                    if (currentDir.searchDir(name) == -1)
+                    {
+
+                        char[] na = name.ToCharArray();
+                        DirectoryEntery dir = new DirectoryEntery(na, 0x10, 0, 0);
+                        currentDir.Directory_table.Add(dir);
+
+                        currentDir.writeDirectory();
+                    }
+                    else {
+                        Console.WriteLine("there is a directroy has the same name");
+                    }
+                }
+                else if (command == "help" && !hasName )
                 {
                     Console.WriteLine(help.help());
                 }
-                else if (command == "help" && hasName)
+                else if (command == "help" && hasName && !hasName2)
                 {
                     if (name == "md")
                     {
@@ -177,28 +148,34 @@ namespace ConsoleApp
                     }
 
                 }
-                else if (command == "rd" && hasName && !hasAttr)
+                else if (command == "rd" && hasName && !hasName2)
                 {
                     if (currentDir.searchDir(name) != -1)
                     {
-                        DirectoryEntery d = currentDir.Directory_table[currentDir.searchDir(name)];
-
-                        directory dir = new directory(d.fileName, d.fileAttr, d.firstCluster, currentDir, d.fileSize);
-                        currentDir.deleteDirectory(dir);
+                        currentDir.deleteDirectory(currentDir.Directory_table[currentDir.searchDir(name)]);
+                        currentDir.Directory_table.Remove(currentDir.Directory_table[currentDir.searchDir(name)]);
                     }
                     else
                     {
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "cd" && hasName)
+                else if (command == "cd" && hasName && !hasName2)
                 {
                     if (currentDir.searchDir(name) != -1)
                     {
                         DirectoryEntery d = currentDir.Directory_table[currentDir.searchDir(name)];
-
-                        directory dir = new directory(d.fileName, d.fileAttr, d.firstCluster, currentDir, d.fileSize);
+                        directory dir = new directory(d.fileName, d.fileAttr, d.firstCluster, currentDir, 0);
                         currentDir = dir;
+                        currentDir.readDirectory();
+                        //directory dir = new directory(d.fileName, d.fileAttr, d.firstCluster, currentDir, d.fileSize);
+                        // currentDir = dir;
+                    }
+                    else if (name == "..") {
+                        char[] fName = { 'H' };
+                        directory currentDIR = new directory(fName, 0x10, 5, null, 0);
+                        currentDir= currentDIR;
+                        currentDir.readDirectory();
                     }
                     else
                     {
@@ -207,66 +184,61 @@ namespace ConsoleApp
 
 
                 }
-                else if (command == "rename" && hasName && hasName2 && !hasAttr)
+                else if (command == "rename" && hasName && hasName2 )
                 {
                     if (currentDir.searchDir(name) != -1)
                     {
                         DirectoryEntery d = currentDir.Directory_table[currentDir.searchDir(name)];
-                        directory dir = new directory(name2.ToCharArray(), d.fileAttr, d.firstCluster, currentDir, d.fileSize);
-                        currentDir.UpdateContent(name, dir);
+                        char[] n = name2.ToCharArray();
+                        DirectoryEntery dNew= new DirectoryEntery(n, 0x10,d.firstCluster,0);
+
+                        currentDir.UpdateContent(currentDir.searchDir(name),dNew);
+                        //directory dir = new directory(name2.ToCharArray(), d.fileAttr, d.firstCluster, currentDir, d.fileSize);
+                        // currentDir.UpdateContent(name, dir);
                     }
                     else
                     {
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "copy" && hasName && hasName2 && !hasAttr)
+                else if (command == "copy" && hasName && hasName2 )
                 {
-                    if (currentDir.searchDir(name) != -1 && currentDir.searchDir(name2) != -1)
+                    if (currentDir.searchFile(name) != -1 && currentDir.searchDir(name2) != -1)
                     {
-                        DirectoryEntery d = currentDir.Directory_table[currentDir.searchDir(name)];
-                        DirectoryEntery d2 = currentDir.Directory_table[currentDir.searchDir(name)];
-                        FileEntery fil = new FileEntery(name.ToCharArray(), d.fileAttr, d.firstCluster, currentDir, d.fileSize);
-                        FileEntery fil2 = new FileEntery(name2.ToCharArray(), d.fileAttr, d.firstCluster, currentDir, d.fileSize);
-                        fil2.content = fil.content;
-
+                        currentDir.File_table[currentDir.searchFile(name2)].content1 = currentDir.File_table[currentDir.searchFile(name2)].content1;
                     }
                     else
                     {
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "del" && hasName && !hasAttr)
-                {
-
-                    if (currentDir.searchDir(name) != -1)
-                    {
-                        DirectoryEntery d = currentDir.Directory_table[currentDir.searchDir(name)];
-
-                        FileEntery fil = new FileEntery(d.fileName, d.fileAttr, d.firstCluster, currentDir, d.fileSize);
-                        fil.deleteFile();
-                    }
-                    else
-                    {
-                        Console.WriteLine("The system cannot find the path specified.");
-                    }
-                }
-                else if (command == "types" && hasName && !hasAttr)
+                else if (command == "del" && hasName && !hasName2)
                 {
 
-                    if (currentDir.searchDir(name) != -1)
+                    if (currentDir.searchFile(name) != -1)
                     {
-                        DirectoryEntery d = currentDir.Directory_table[currentDir.searchDir(name)];
+                        currentDir.File_table.RemoveAt(currentDir.searchFile(name));
+                        if (currentDir.searchDir(name) != -1) currentDir.Directory_table.RemoveAt(currentDir.searchDir(name));
 
-                        FileEntery fil = new FileEntery(d.fileName, d.fileAttr, d.firstCluster, currentDir, d.fileSize);
-                        Console.WriteLine(fil.content);
                     }
                     else
                     {
                         Console.WriteLine("The system cannot find the path specified.");
                     }
                 }
-                else if (command == "dir" && !hasName && !hasAttr)
+                else if (command == "type" && hasName && !hasName2)
+                {
+
+                    if (currentDir.searchFile(name) != -1)
+                    {
+                        Console.WriteLine(currentDir.File_table[currentDir.searchFile(name)].content1);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The system cannot find the path specified.");
+                    }
+                }
+                else if (command == "dir" && !hasName )
                 {
                     int fileN = 0;
                     int dN = 0;
@@ -277,33 +249,45 @@ namespace ConsoleApp
                     
                         if (currentDir.Directory_table[i].fileAttr == 0x0)
                         {
-                            Console.WriteLine("      " + currentDir.Directory_table[i].fileSize + " "+ currentDir.Directory_table[i].fileName);
+                            
+
+                            Console.WriteLine("      " + currentDir.Directory_table[i].fileSize + " "+ new String(currentDir.Directory_table[i].fileName));
                             fileN++;
                             size += currentDir.Directory_table[i].fileSize;
                         }
                         else {
-                            Console.WriteLine("      <DIR>" + currentDir.Directory_table[i].fileName);
+                            Console.WriteLine("      <DIR>" + "       "+new String (currentDir.Directory_table[i].fileName));
 
 
                             dN++;
                         }
 
 
-                        Console.WriteLine(fileN+ " File(s)              "+size+ "bytes");
-                        Console.WriteLine(dN + " Dir(s)              " + fat.getFreeSpace() + "free bytes");
-                       
              
 
                     }
+                    Console.WriteLine(fileN + " File(s)              " + size + "bytes");
+                    Console.WriteLine(dN + " Dir(s)              " + fat.getFreeSpace() + "free bytes");
+
+
                 }
-                else if (command == "cls" && !hasName && !hasAttr)
+                else if (command == "cls" && !hasName )
                 {
                     Console.Clear();
-                    Console.WriteLine(attr);
+                    
                 }
-                else if (command == "help" && !hasName && !hasAttr)
-                { Console.WriteLine(File.ReadAllText(@"F:\college\third_year\second semester\compilers\project\help.txt")); }
+                else if (command == "import" && hasName && hasName2)
+                {
 
+                    char[] na = { 'n' };
+                    FileEntery F = new FileEntery(na, 0x0, 0, currentDir, 0, "");
+                    
+                    F.importFile(name, name2);
+                    F.writeFile();
+                    currentDir.File_table.Add(F);
+                    DirectoryEntery entery = new DirectoryEntery(F.fileName, F.fileAttr, F.firstCluster, F.fileSize);
+                    currentDir.Directory_table.Add(entery);
+                }
                 else { Console.Write("'" + commandText + "'" + "is not recognized as an internal or external command,\n operable program or batch file\n"); }
 
 
